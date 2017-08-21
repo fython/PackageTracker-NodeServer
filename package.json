@@ -1,0 +1,15 @@
+{
+  "name": "packagetracker-push",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./server.js"
+  },
+  "dependencies": {
+    "body-parser": "~1.17.1",
+    "debug": "~2.6.3",
+    "express": "~4.15.2",
+    "mongoose": "~3.6.13",
+    "request": "^2.81.0"
+  }
+}
