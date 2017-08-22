@@ -1,4 +1,4 @@
-var mongoose = require('../database'), Schema = mongoose.Schema;
+var mongoose = require('mongoose'), Schema = mongoose.Schema;
 
 var MODEL = Schema({
     deviceToken: {type: String},

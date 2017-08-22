@@ -1,77 +1,87 @@
-var request = require('request');
-var Package = require('./models/Package');
-var Status = require('./models/Status');
+const request = require('request');
+const Package = require('./models/Package');
+const Status = require('./models/Status');
 
-KUAIDI_100_DETECT_COM_URL = 'http://www.kuaidi100.com/autonumber/autoComNum?text=';
-KUAIDI_100_QUERY_URL = 'http://www.kuaidi100.com/query?type={com}&postid={id}';
+const KUAIDI_100_DETECT_COM_URL = 'http://www.kuaidi100.com/autonumber/autoComNum?text=';
+const KUAIDI_100_QUERY_URL = 'http://www.kuaidi100.com/query?type={com}&postid={id}';
 
-var detectCompany = function (id, callback) {
-    request.get(KUAIDI_100_DETECT_COM_URL + id, function (err, res, body) {
-        var obj = JSON.parse(body);
-        callback(obj.auto[0].comCode);
-    });
-};
-
-var _queryPackageByKuaidi100 = function (id, com, callback) {
-    request.get(KUAIDI_100_QUERY_URL.replace('{id}', id).replace('{com}', com), function (err, res, body) {
-       var obj = JSON.parse(body);
-       var package = new Package({
-           message: obj.message,
-           id: obj.nu,
-           company: obj.com,
-           statusCode: obj.status,
-           state: obj.state,
-           isChecked: obj.ischeck === 1,
-           updateTime: Date.now(),
-           data: obj.data.map(function (item) {
-               return new Status({
-                   content: item.context,
-                   time: item.time,
-                   location: item.location
-               });
-           })
-       });
-       callback(package);
-    });
-};
-var queryPackageByKuaidi100 = function (id, com, callback) {
-    if (!id) callback(null);
-    if (!com) {
-        detectCompany(id, function (code) {
-            com = code;
-            _queryPackageByKuaidi100(id, com, callback);
+async function detectCompany(id) {
+    return new Promise((resolve, reject) => {
+        request.get(KUAIDI_100_DETECT_COM_URL + id, function (err, res, body) {
+            let obj = JSON.parse(body);
+            if (obj.auto.length > 0) {
+                resolve(obj.auto[0].comCode);
+            } else {
+                resolve(null);
+            }
         });
-    } else {
-        _queryPackageByKuaidi100(id, com, callback);
-    }
-};
+    })
+}
 
-var express = require('express');
-var router = express.Router();
+async function _queryPackageByKuaidi100(id, com) {
+    return new Promise(function (resolve, reject) {
+        request.get(KUAIDI_100_QUERY_URL.replace('{id}', id).replace('{com}', com), function (err, res, body) {
+            try {
+                let obj = JSON.parse(body);
+                let pack = new Package({
+                    message: obj.message,
+                    id: obj.nu,
+                    company: obj.com,
+                    statusCode: obj.status,
+                    state: obj.state,
+                    isChecked: obj.ischeck === 1,
+                    updateTime: Date.now(),
+                    data: obj.data.map(function (item) {
+                        return new Status({
+                            content: item.context,
+                            time: item.time,
+                            location: item.location
+                        });
+                    })
+                });
+                resolve(pack);
+            } catch (e) {
+                console.log(e);
+                resolve(null);
+            }
+        });
+    })
+}
 
-router.get('/query', function (req, response, next) {
-    var id = req.query['id'];
-    var com = req.query['com'];
+async function queryPackageByKuaidi100(id, com) {
+    return new Promise(async (resolve, reject) => {
+        if (!id) resolve(null);
+        if (!com) {
+            com = await detectCompany(id)
+        }
+        resolve(await _queryPackageByKuaidi100(id, com))
+    })
+}
+
+const express = require('express');
+let router = express.Router();
+
+router.get('/query', async (req, response, next) => {
+    let id = req.query['id'];
+    let com = req.query['com'];
 
     if (!id) {
         response.json({message: 'Missing id parameter', code: -3});
         return
     }
-    queryPackageByKuaidi100(id, com, function (package) {
-        response.json({message: 'Done', code: 0, data: package});
-    });
+    let pack = await queryPackageByKuaidi100(id, com);
+    response.json({message: 'Done', code: 0, data: pack});
 });
 
 router.get('/detect_company', function (req, response, next) {
-    var id = req.query['id'];
+    let id = req.query['id'];
 
     if (!id) {
         response.json({message: 'Missing id parameter', code: -3});
         return
     }
-    detectCompany(id, function (code) {
-        response.json({message: 'Done', code: 0, company: code});
-    });
+    let code = detectCompany(id);
+    response.json({message: 'Done', code: 0, company: code});
 });
 
 router.queryPackage = queryPackageByKuaidi100;
