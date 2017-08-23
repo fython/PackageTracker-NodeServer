@@ -173,19 +173,35 @@ router.post('/register', function (req, response, next) {
         return
     }
 
-    var newUser = new User({
-        deviceToken: userToken,
-        registerTime: Date.now(),
-        subscribes: []
+    var where = {deviceToken: userToken};
+
+    User.find(where, function (err, res) {
+        if (err) {
+            console.log(err);
+            response.json({message: err.message, code: -1});
+        } else {
+            let user;
+            if (res.length < 1) {
+                user = new User({
+                    deviceToken: userToken,
+                    registerTime: Date.now(),
+                    subscribes: []
+                });
+            } else {
+                user = res[0];
+                user.registerTime = Date.now()
+            }
+
+            user.save(function (err, res) {
+                if (err) {
+                    response.json({message: 'Failed to register user. ' + err.message, code: -1});
+                } else {
+                    response.json({message: 'Succeed.', code: 0, token: userToken, time: res.registerTime});
+                }
+            })
+        }
     });
 
-    newUser.save(function (err, res) {
-        if (err) {
-            response.json({message: 'Failed to register user. ' + err.message, code: -1});
-        } else {
-            response.json({message: 'Succeed.', code: 0, token: userToken, time: res.registerTime});
-        }
-    })
 });
 
 module.exports = router;
