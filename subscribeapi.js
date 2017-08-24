@@ -1,6 +1,7 @@
-var express = require('express');
-var User = require('./models/User');
-var router = express.Router();
+const express = require('express');
+const User = require('./models/User');
+let router = express.Router();
+const Tasks = require('./tasks');
 
 /**
  * POST method: /add
@@ -10,16 +11,16 @@ var router = express.Router();
  * com - delivery company id
  */
 router.post('/add', function(req, response, next) {
-    var userToken = req.body['token'];
-    var itemId = req.body['id'];
-    var company = req.body['com'];
+    let userToken = req.body['token'];
+    let itemId = req.body['id'];
+    let company = req.body['com'];
 
     if (!userToken || !itemId) {
         response.json({message: 'Wrong parameters', code: -3});
         return
     }
 
-    var where = {deviceToken: userToken};
+    let where = {deviceToken: userToken};
 
     User.find(where, function (err, res) {
         if (err) {
@@ -28,7 +29,7 @@ router.post('/add', function(req, response, next) {
         } else if (res.length < 1) {
             response.json({message: 'This token hasn\'t been registered.', code: -2});
         } else {
-            var subscribes = res[0].subscribes;
+            let subscribes = res[0].subscribes;
             if (company) {
                 itemId += "+" + company;
             }
@@ -55,15 +56,15 @@ router.post('/add', function(req, response, next) {
  * id - package id want to remove
  */
 router.post('/remove', function(req, response, next) {
-    var userToken = req.body['token'];
-    var itemId = req.body['id'];
+    let userToken = req.body['token'];
+    let itemId = req.body['id'];
 
     if (!userToken || !itemId) {
         response.json({message: 'Wrong parameters', code: -3});
         return
     }
 
-    var where = {deviceToken: userToken};
+    let where = {deviceToken: userToken};
 
     User.find(where, function (err, res) {
         if (err) {
@@ -72,8 +73,8 @@ router.post('/remove', function(req, response, next) {
         } else if (res.length < 1) {
             response.json({message: 'This token hasn\'t been registered.', code: -2});
         } else {
-            var removeCount = res[0].subscribes.length;
-            var subscribes = res[0].subscribes.filter(function (item) { return item.indexOf(itemId) === -1 });
+            let removeCount = res[0].subscribes.length;
+            let subscribes = res[0].subscribes.filter(function (item) { return item.indexOf(itemId) === -1 });
             removeCount -= subscribes.length;
             User.update(where, {'subscribes': subscribes}, function (err, res) {
                 if (err) {
@@ -94,8 +95,8 @@ router.post('/remove', function(req, response, next) {
  * Json array
  */
 router.post('/sync', function (req, response, next) {
-   var userToken = req.query['token'];
-   var array = req.body;
+   let userToken = req.query['token'];
+   let array = req.body;
 
     if (!userToken) {
         response.json({message: 'Missing \"token\" param.', code: -3});
@@ -105,14 +106,14 @@ router.post('/sync', function (req, response, next) {
         response.json({message: 'Please post a json array.', code: -3});
         return
     }
-    for (var i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++) {
         if (typeof array[i] !== 'string') {
             response.json({message: 'Invalid data.', code: -2});
             return
         }
     }
 
-    var where = {deviceToken: userToken};
+    let where = {deviceToken: userToken};
 
     User.find(where, function (err, res) {
         if (err) {
@@ -139,14 +140,14 @@ router.post('/sync', function (req, response, next) {
  * token - user devices's firebase token (unique)
  */
 router.get('/list', function (req, response, next) {
-    var userToken = req.query['token'];
+    let userToken = req.query['token'];
 
     if (!userToken) {
         response.json({message: 'Missing \"token\" param.', code: -3});
         return
     }
 
-    var where = {deviceToken: userToken};
+    let where = {deviceToken: userToken};
 
     User.find(where, function (err, res) {
         if (err) {
@@ -166,14 +167,14 @@ router.get('/list', function (req, response, next) {
  * token - the firebase token of device want to register (unique)
  */
 router.post('/register', function (req, response, next) {
-    var userToken = req.body['token'];
+    let userToken = req.body['token'];
 
     if (!userToken) {
         response.json({message: 'Missing \"token\" param.', code: -3});
         return
     }
 
-    var where = {deviceToken: userToken};
+    let where = {deviceToken: userToken};
 
     User.find(where, function (err, res) {
         if (err) {
@@ -202,6 +203,34 @@ router.post('/register', function (req, response, next) {
         }
     });
 
+});
+
+/**
+ * GET method: /request_push
+ * Query parameters:
+ * token - user devices's firebase token (unique)
+ */
+router.get("/request_push", (req, response, next) => {
+    let userToken = req.query['token'];
+
+    if (!userToken) {
+        response.json({message: 'Missing \"token\" param.', code: -3});
+        return
+    }
+
+    let where = {deviceToken: userToken};
+
+    User.find(where, (err, res) => {
+        if (err) {
+            console.log(err);
+            response.json({message: err.message, code: -1});
+        } else if (res.length < 1) {
+            response.json({message: 'This token hasn\'t been registered.', code: -2});
+        } else {
+            Tasks.queryUsers(res);
+            response.json({message: 'Requested.', code: 0});
+        }
+    });
 });
 
 module.exports = router;

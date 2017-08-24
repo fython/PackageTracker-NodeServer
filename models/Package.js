@@ -1,6 +1,6 @@
-var mongoose = require('mongoose'), Schema = mongoose.Schema;
+const mongoose = require('mongoose'), Schema = mongoose.Schema;
 
-var MODEL = Schema({
+let MODEL = Schema({
     message: {type: String},
     id: {type: String},
     company: {type: String},
