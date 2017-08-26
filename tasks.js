@@ -23,10 +23,10 @@ async function queryUsers(users) {
                     if (history) {
                         result._id = history._id;
                     }
-                    if (history === null || result.data.length > history.data.length) {
+                    if (history !== null || !history.data || result.data.length > history.data.length) {
                         FirebaseApi.pushPackage(target, result)
                     }
-                    if (history !== null) {
+                    if (history) {
                         history.data = result.data;
                         history.state = result.state;
                         history.isChecked = result.isChecked;
