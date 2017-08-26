@@ -23,7 +23,7 @@ async function queryUsers(users) {
                     if (history) {
                         result._id = history._id;
                     }
-                    if (history !== null || !history.data || result.data.length > history.data.length) {
+                    if (!history || (history && result.data.length > history.data.length)) {
                         FirebaseApi.pushPackage(target, result)
                     }
                     if (history) {
