@@ -5,7 +5,7 @@ const FCM_SEND_URL = 'https://fcm.googleapis.com/fcm/send';
 function pushPackage(target, pack) {
     return new Promise((resolve, reject) => {
         let options = {
-            proxy: 'http://127.0.0.1:1080',
+            // proxy: 'http://127.0.0.1:1080',
             method: 'POST',
             uri: FCM_SEND_URL,
             headers: {
