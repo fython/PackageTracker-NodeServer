@@ -10,6 +10,8 @@
 
 首先确保你的运行环境、操作系统已经安装了 [Node.js](https://nodejs.org) 8+ （原生 ES6 await/async 支持需要）。
 
+除此以外，还需要安装 MongoDB 作为推送服务使用的默认数据库。安装方法：[Windows](http://www.runoob.com/mongodb/mongodb-window-install.html) [Linux](http://www.runoob.com/mongodb/mongodb-linux-install.html)
+
 然后 `git clone https://github.com/fython/PackageTracker-NodeServer` 将项目代码克隆到本地。
 
 打开项目文件夹，运行 `npm install` 安装依赖。
