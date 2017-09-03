@@ -1,11 +1,15 @@
 const express = require('express');
+const Http = require('http');
+const Https = require('https');
+const fs = require('fs');
 const mongoose = require('mongoose');
 const subscribeapi = require('./subscribeapi');
 const queryapi = require('./queryapi');
 const tasks = require('./tasks');
 const bodyParser = require('body-parser');
+const Config = require('./config.js');
 
-const DB_URL = 'mongodb://127.0.0.1:27017/ptpush';
+let DB_URL = Config.mongodb_server_url;
 
 console.log("Connecting to " + DB_URL + "...");
 mongoose.connect(DB_URL, { useMongoClient: true }).then(
@@ -17,19 +21,33 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
 
-        let port = process.env.PORT || 3000;
-
         app.use('/subscribe', subscribeapi);
         app.use('/', queryapi);
 
-        let server = app.listen(port, () => {
-            let host = server.address().address;
-            let port = server.address().port;
+        let httpServer = Http.createServer(app);
+        httpServer.listen(process.env.PORT || Config.server_http_port, () => {
+            let host = httpServer.address().address;
+            let port = httpServer.address().port;
 
-            console.log("Running at http://%s:%s", host, port);
+            console.log("Http Server running at http://%s:%s", host, port);
 
             tasks.scheduleQueryTask();
         });
+
+        if (Config.enable_https) {
+          console.log("Https Server is enabled. Now loading credentials...");
+          let privateKey = fs.readFileSync(Config.private_key_path, 'utf8');
+          let certificate = fs.readFileSync(Config.certificate_path, 'utf8');
+          let credentials = {key: privateKey, cert: certificate};
+
+          let httpsServer = Https.createServer(credentials, app);
+          httpsServer.listen(Config.server_https_port, () => {
+            let host = httpsServer.address().address;
+            let port = httpsServer.address().port;
+
+            console.log("Https Server running at https://%s:%s", host, port);
+          });
+        }
     },
     err => { console.log(err.message) }
 );
