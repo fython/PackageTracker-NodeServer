@@ -80,8 +80,11 @@ router.get('/detect_company', function (req, response, next) {
         response.json({message: 'Missing id parameter', code: -3});
         return
     }
-    let code = detectCompany(id);
-    response.json({message: 'Done', code: 0, company: code});
+
+    detectCompany(id)
+      .then(comCode => {
+        response.json({message: 'Done', code: 0, company: comCode});
+      })
 });
 
 router.queryPackage = queryPackageByKuaidi100;
