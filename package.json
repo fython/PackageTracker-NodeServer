@@ -12,6 +12,7 @@
     "mongoose": "^4.11.7",
     "node-schedule": "^1.2.4",
     "request": "^2.81.0",
-    "request-promise-native": "^1.0.4"
+    "request-promise-native": "^1.0.4",
+    "http-auth": "^3.2.3"
   }
 }
