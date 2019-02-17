@@ -1,6 +1,7 @@
 const express = require('express');
 const Http = require('http');
 const Https = require('https');
+var auth = require('http-auth');
 const fs = require('fs');
 const mongoose = require('mongoose');
 const subscribeapi = require('./subscribeapi');
@@ -34,7 +35,13 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
           let certificate = fs.readFileSync(Config.certificate_path, 'utf8');
           let credentials = {key: privateKey, cert: certificate};
 
-          let httpsServer = Https.createServer(credentials, app);
+          if (!Config.auth) {
+            let basic = auth.basic(Config.auth);
+            let httpsServer = Https.createServer(basic, credentials, app);
+          } else {
+            let httpsServer = Https.createServer(credentials, app);
+          }
+
           httpsServer.listen(Config.server_port, () => {
             let host = httpsServer.address().address;
             let port = httpsServer.address().port;
@@ -42,7 +49,13 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
             console.log("Https Server running at https://%s:%s", host, port);
           });
         } else {
-          let httpServer = Http.createServer(app);
+          if (!Config.auth) {
+            let basic = auth.basic(Config.auth);
+            let httpServer = Http.createServer(basic, app);
+          } else {
+            let httpServer = Http.createServer(app);
+          }
+
           httpServer.listen(Config.server_port, () => {
               let host = httpServer.address().address;
               let port = httpServer.address().port;
