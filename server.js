@@ -35,7 +35,7 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
           let credentials = {key: privateKey, cert: certificate};
 
           let httpsServer = Https.createServer(credentials, app);
-          httpsServer.listen(Config.server_https_port, () => {
+          httpsServer.listen(Config.server_port, () => {
             let host = httpsServer.address().address;
             let port = httpsServer.address().port;
 
@@ -43,7 +43,7 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
           });
         } else {
           let httpServer = Http.createServer(app);
-          httpServer.listen(Config.server_http_port, () => {
+          httpServer.listen(Config.server_port, () => {
               let host = httpServer.address().address;
               let port = httpServer.address().port;
 
