@@ -36,8 +36,8 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
           let credentials = {key: privateKey, cert: certificate};
 
           if (!Config.auth) {
-            let basic = auth.basic(Config.auth);
-            let httpsServer = Https.createServer(basic, credentials, app);
+            let basicAuth = auth.basic(Config.auth);
+            let httpsServer = Https.createServer(basicAuth, credentials, app);
             console.log("Http authorization is enabled.");
           } else {
             let httpsServer = Https.createServer(credentials, app);
@@ -51,8 +51,8 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
           });
         } else {
           if (!Config.auth) {
-            let basic = auth.basic(Config.auth);
-            let httpServer = Http.createServer(basic, app);
+            let basicAuth = auth.basic(Config.auth);
+            let httpServer = Http.createServer(basicAuth, app);
             console.log("Http authorization is enabled.");
           } else {
             let httpServer = Http.createServer(app);
