@@ -24,15 +24,9 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
         app.use('/subscribe', subscribeapi);
         app.use('/', queryapi);
 
-        let httpServer = Http.createServer(app);
-        httpServer.listen(process.env.PORT || Config.server_http_port, () => {
-            let host = httpServer.address().address;
-            let port = httpServer.address().port;
-
-            console.log("Http Server running at http://%s:%s", host, port);
-
-            tasks.scheduleQueryTask();
-        });
+        if (!Config.server_port) {
+          let server_port = process.env.PORT;
+        }
 
         if (Config.enable_https) {
           console.log("Https Server is enabled. Now loading credentials...");
@@ -41,13 +35,22 @@ mongoose.connect(DB_URL, { useMongoClient: true }).then(
           let credentials = {key: privateKey, cert: certificate};
 
           let httpsServer = Https.createServer(credentials, app);
-          httpsServer.listen(Config.server_https_port, () => {
+          httpsServer.listen(Config.server_port, () => {
             let host = httpsServer.address().address;
             let port = httpsServer.address().port;
 
             console.log("Https Server running at https://%s:%s", host, port);
           });
+        } else {
+          let httpServer = Http.createServer(app);
+          httpServer.listen(Config.server_port, () => {
+              let host = httpServer.address().address;
+              let port = httpServer.address().port;
+
+              console.log("Http Server running at http://%s:%s", host, port);
+          });
         }
+        tasks.scheduleQueryTask();
     },
     err => { console.log(err.message) }
 );
