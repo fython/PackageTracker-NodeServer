@@ -9,7 +9,7 @@
     "body-parser": "~1.17.1",
     "debug": "~2.6.3",
     "express": "~4.15.2",
-    "mongoose": "^4.11.7",
+    "mongoose": "^4.13.21",
     "node-schedule": "^1.2.4",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4"
