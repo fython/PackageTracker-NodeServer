@@ -6,9 +6,9 @@
     "start": "node ./server.js"
   },
   "dependencies": {
-    "body-parser": "~1.17.1",
+    "body-parser": "~1.20.1",
     "debug": "~2.6.3",
-    "express": "~4.15.2",
+    "express": "~4.15.4",
     "mongoose": "^4.11.7",
     "node-schedule": "^1.2.4",
     "request": "^2.81.0",
