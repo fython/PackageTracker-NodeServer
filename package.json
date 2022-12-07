@@ -8,7 +8,7 @@
   "dependencies": {
     "body-parser": "~1.17.1",
     "debug": "~2.6.3",
-    "express": "~4.15.2",
+    "express": "~4.17.3",
     "mongoose": "^4.11.7",
     "node-schedule": "^1.2.4",
     "request": "^2.81.0",
